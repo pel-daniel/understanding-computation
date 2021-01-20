@@ -127,18 +127,68 @@ class SimpleVariable < Struct.new(:name)
   end
 end
 
-class SimpleMachine < Struct.new(:expression, :environment)
+class SimpleDoNothing
+  def to_s
+  'do-nothing'
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def ==(other_statement)
+    other_statement.instance_of?(DoNothing)
+  end
+
+  def reducible?
+    false
+  end
+end
+
+class SimpleAssign < Struct.new(:name, :expression)
+  def to_s
+    "#{name} = #{expression}"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    if expression.reducible?
+      [
+        SimpleAssign.new(
+          name,
+          expression.reduce(environment)
+        ),
+        environment
+      ]
+    else
+      [
+        SimpleDoNothing.new,
+        environment.merge({ name => expression })
+      ]
+    end
+  end
+end
+
+class SimpleMachine < Struct.new(:statement, :environment)
   def step
-    self.expression = expression.reduce(environment)
+    self.statement, self.environment = statement.reduce(environment)
   end
 
   def run
-    while expression.reducible?
-      puts expression
+    while statement.reducible?
+      puts "#{statement}, #{environment}"
+
       step
     end
 
-    puts expression
+    puts "#{statement}, #{environment}"
   end
 end
 
@@ -167,13 +217,26 @@ end
 #   {}
 # ).run
 
+# SimpleMachine.new(
+#   SimpleAdd.new(
+#     SimpleVariable.new(:x),
+#     SimpleVariable.new(:y)
+#   ),
+#   {
+#     x: SimpleNumber.new(3),
+#     y: SimpleNumber.new(4)
+#   }
+# ).run
+
 SimpleMachine.new(
-  SimpleAdd.new(
-    SimpleVariable.new(:x),
-    SimpleVariable.new(:y)
+  SimpleAssign.new(
+    :x,
+    SimpleAdd.new(
+      SimpleVariable.new(:x),
+      SimpleNumber.new(1)
+    )
   ),
   {
-    x: SimpleNumber.new(3),
-    y: SimpleNumber.new(4)
+    x: SimpleNumber.new(2)
   }
 ).run

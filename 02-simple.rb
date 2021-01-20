@@ -25,11 +25,11 @@ class SimpleAdd < Struct.new(:left, :right)
     true
   end
 
-  def reduce
+  def reduce(environment)
     if left.reducible?
-      SimpleAdd.new(left.reduce, right)
+      SimpleAdd.new(left.reduce(environment), right)
     elsif right.reducible?
-      SimpleAdd.new(left, right.reduce)
+      SimpleAdd.new(left, right.reduce(environment))
     else
       SimpleNumber.new(
         left.value + right.value
@@ -51,11 +51,11 @@ class SimpleMultiply < Struct.new(:left, :right)
     true
   end
 
-  def reduce
+  def reduce(environment)
     if left.reducible?
-      SimpleAdd.new(left.reduce, right)
+      SimpleAdd.new(left.reduce(environment), right)
     elsif right.reducible?
-      SimpleAdd.new(left, right.reduce)
+      SimpleAdd.new(left, right.reduce(environment))
     else
       SimpleNumber.new(
         left.value * right.value
@@ -91,20 +91,38 @@ class SimpleLessThan < Struct.new(:left, :right)
     true
   end
 
-  def reduce
+  def reduce(environment)
     if left.reducible?
-      SimpleLessThan.new(left.reduce, right)
+      SimpleLessThan.new(left.reduce(environment), right)
     elsif right.reducible?
-      SimpleLessThan.new(left, right.reduce)
+      SimpleLessThan.new(left, right.reduce(environment))
     else
       SimpleBoolean.new(left.value < right.value)
     end
   end
 end
 
-class SimpleMachine < Struct.new(:expression)
+class SimpleVariable < Struct.new(:name)
+  def to_s
+    name.to_s
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    environment[name]
+  end
+end
+
+class SimpleMachine < Struct.new(:expression, :environment)
   def step
-    self.expression = expression.reduce
+    self.expression = expression.reduce(environment)
   end
 
   def run
@@ -130,12 +148,23 @@ end
 #   )
 # ).run
 
+# SimpleMachine.new(
+#   SimpleLessThan.new(
+#     SimpleNumber.new(5),
+#     SimpleAdd.new(
+#       SimpleNumber.new(2),
+#       SimpleNumber.new(2)
+#     )
+#   )
+# ).run
+
 SimpleMachine.new(
-  SimpleLessThan.new(
-    SimpleNumber.new(5),
-    SimpleAdd.new(
-      SimpleNumber.new(2),
-      SimpleNumber.new(2)
-    )
-  )
+  SimpleAdd.new(
+    SimpleVariable.new(:x),
+    SimpleVariable.new(:y)
+  ),
+  {
+    x: SimpleNumber.new(3),
+    y: SimpleNumber.new(4)
+  }
 ).run

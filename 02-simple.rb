@@ -10,6 +10,10 @@ class SimpleNumber < Struct.new(:value)
   def reducible?
     false
   end
+
+  def reduce(_)
+    self
+  end
 end
 
 class SimpleAdd < Struct.new(:left, :right)
@@ -26,10 +30,11 @@ class SimpleAdd < Struct.new(:left, :right)
   end
 
   def reduce(environment)
-    if left.reducible?
-      SimpleAdd.new(left.reduce(environment), right)
-    elsif right.reducible?
-      SimpleAdd.new(left, right.reduce(environment))
+    if left.reducible? || right.reducible?
+      SimpleAdd.new(
+        left.reduce(environment),
+        right.reduce(environment)
+      )
     else
       SimpleNumber.new(
         left.value + right.value
@@ -52,10 +57,11 @@ class SimpleMultiply < Struct.new(:left, :right)
   end
 
   def reduce(environment)
-    if left.reducible?
-      SimpleAdd.new(left.reduce(environment), right)
-    elsif right.reducible?
-      SimpleAdd.new(left, right.reduce(environment))
+    if left.reducible? || right.reducible?
+      SimpleAdd.new(
+        left.reduce(environment),
+        right.reduce(environment)
+      )
     else
       SimpleNumber.new(
         left.value * right.value
@@ -92,10 +98,11 @@ class SimpleLessThan < Struct.new(:left, :right)
   end
 
   def reduce(environment)
-    if left.reducible?
-      SimpleLessThan.new(left.reduce(environment), right)
-    elsif right.reducible?
-      SimpleLessThan.new(left, right.reduce(environment))
+    if left.reducible? || right.reducible?
+      SimpleLessThan.new(
+        left.reduce(environment),
+        right.reduce(environment)
+      )
     else
       SimpleBoolean.new(left.value < right.value)
     end
@@ -145,7 +152,8 @@ end
 #       SimpleNumber.new(3),
 #       SimpleNumber.new(4)
 #     )
-#   )
+#   ),
+#   {}
 # ).run
 
 # SimpleMachine.new(
@@ -155,7 +163,8 @@ end
 #       SimpleNumber.new(2),
 #       SimpleNumber.new(2)
 #     )
-#   )
+#   ),
+#   {}
 # ).run
 
 SimpleMachine.new(

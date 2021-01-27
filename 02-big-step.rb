@@ -186,31 +186,37 @@ end
 
 # Expressions
 
-# puts BigStepNumber
-#   .new(23)
-#   .evaluate({})
+# puts(
+#   BigStepNumber
+#     .new(23)
+#     .evaluate({})
+# )
 
-# puts BigStepVariable
-#   .new(:x)
-#   .evaluate(
-#     {
-#       x: BigStepNumber.new(23)
-#     }
-#   )
+# puts(
+#   BigStepVariable
+#     .new(:x)
+#     .evaluate(
+#       {
+#         x: BigStepNumber.new(23)
+#       }
+#     )
+# )
 
-# puts BigStepLessThan
-#   .new(
-#     BigStepAdd.new(
-#       BigStepVariable.new(:x),
-#       BigStepNumber.new(2)
-#     ),
-#     BigStepVariable.new(:y)
-#   ).evaluate(
-#     {
-#       x: BigStepNumber.new(2),
-#       y: BigStepNumber.new(5)
-#     }
-#   )
+# puts(
+#   BigStepLessThan
+#     .new(
+#       BigStepAdd.new(
+#         BigStepVariable.new(:x),
+#         BigStepNumber.new(2)
+#       ),
+#       BigStepVariable.new(:y)
+#     ).evaluate(
+#       {
+#         x: BigStepNumber.new(2),
+#         y: BigStepNumber.new(5)
+#       }
+#     )
+# )
 
 
 # Statements

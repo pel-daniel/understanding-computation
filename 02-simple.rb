@@ -241,6 +241,34 @@ class SimpleSequence < Struct.new(:first, :second)
   end
 end
 
+class SimpleWhile < Struct.new(:condition, :body)
+  def to_s
+    "while (#{condition}) { #{body} }"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    [
+      SimpleIf.new(
+        condition,
+        SimpleSequence.new(
+          body,
+          self
+        ),
+        SimpleDoNothing.new
+      ),
+      environment
+    ]
+  end
+end
+
 class SimpleMachine < Struct.new(:statement, :environment)
   def step
     self.statement, self.environment = statement.reduce(environment)
@@ -337,22 +365,41 @@ end
 #   }
 # ).run
 
+# SimpleMachine.new(
+#   SimpleSequence.new(
+#     SimpleAssign.new(
+#       :x,
+#       SimpleAdd.new(
+#         SimpleNumber.new(1),
+#         SimpleNumber.new(1)
+#       )
+#     ),
+#     SimpleAssign.new(
+#       :y,
+#       SimpleAdd.new(
+#         SimpleVariable.new(:x),
+#         SimpleNumber.new(3)
+#       )
+#     )
+#   ),
+#   {}
+# ).run
+
 SimpleMachine.new(
-  SimpleSequence.new(
-    SimpleAssign.new(
-      :x,
-      SimpleAdd.new(
-        SimpleNumber.new(1),
-        SimpleNumber.new(1)
-      )
+  SimpleWhile.new(
+    SimpleLessThan.new(
+      SimpleVariable.new(:x),
+      SimpleNumber.new(5)
     ),
     SimpleAssign.new(
-      :y,
-      SimpleAdd.new(
+      :x,
+      SimpleMultiply.new(
         SimpleVariable.new(:x),
         SimpleNumber.new(3)
       )
     )
   ),
-  {}
+  {
+    x: SimpleNumber.new(1)
+  }
 ).run

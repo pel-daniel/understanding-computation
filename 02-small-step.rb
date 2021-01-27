@@ -129,7 +129,7 @@ end
 
 class SimpleDoNothing
   def to_s
-  'do-nothing'
+    'do-nothing'
   end
 
   def inspect

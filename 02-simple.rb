@@ -58,7 +58,7 @@ class SimpleMultiply < Struct.new(:left, :right)
 
   def reduce(environment)
     if left.reducible? || right.reducible?
-      SimpleAdd.new(
+      SimpleMultiply.new(
         left.reduce(environment),
         right.reduce(environment)
       )

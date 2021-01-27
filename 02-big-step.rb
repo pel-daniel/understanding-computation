@@ -238,8 +238,10 @@ end
 #   )
 # )
 
-# puts statement
-# puts statement.evaluate({})
+# puts(statement)
+# puts(
+#   statement.evaluate({})
+# )
 
 statement = BigStepWhile.new(
   BigStepLessThan.new(

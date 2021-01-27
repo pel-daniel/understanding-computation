@@ -137,7 +137,7 @@ class SimpleDoNothing
   end
 
   def ==(other_statement)
-    other_statement.instance_of?(DoNothing)
+    other_statement.instance_of?(SimpleDoNothing)
   end
 
   def reducible?
@@ -275,6 +275,23 @@ end
 #   }
 # ).run
 
+# SimpleMachine.new(
+#   SimpleIf.new(
+#     SimpleVariable.new(:x),
+#     SimpleAssign.new(
+#       :y,
+#       SimpleNumber.new(1)
+#     ),
+#     SimpleAssign.new(
+#       :y,
+#       SimpleNumber.new(2)
+#     )
+#   ),
+#   {
+#     x: SimpleBoolean.new(true)
+#   }
+# ).run
+
 SimpleMachine.new(
   SimpleIf.new(
     SimpleVariable.new(:x),
@@ -282,12 +299,9 @@ SimpleMachine.new(
       :y,
       SimpleNumber.new(1)
     ),
-    SimpleAssign.new(
-      :y,
-      SimpleNumber.new(2)
-    )
+    SimpleDoNothing.new
   ),
   {
-    x: SimpleBoolean.new(true)
+    x: SimpleBoolean.new(false)
   }
 ).run

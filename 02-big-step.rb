@@ -162,6 +162,27 @@ class BigStepSequence < Struct.new(:first, :second)
   end
 end
 
+class BigStepWhile < Struct.new(:condition, :body)
+  def to_s
+    "while (#{condition}) { #{body} }"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def evaluate(environment)
+    case condition.evaluate(environment)
+    when BigStepBoolean.new(true)
+      evaluate(
+        body.evaluate(environment)
+      )
+    when BigStepBoolean.new(false)
+      environment
+    end
+  end
+end
+
 
 # Expressions
 
@@ -194,22 +215,45 @@ end
 
 # Statements
 
-statement = BigStepSequence.new(
-  BigStepAssign.new(
-    :x,
-    BigStepAdd.new(
-      BigStepNumber.new(1),
-      BigStepNumber.new(1)
-    )
+# statement = BigStepSequence.new(
+#   BigStepAssign.new(
+#     :x,
+#     BigStepAdd.new(
+#       BigStepNumber.new(1),
+#       BigStepNumber.new(1)
+#     )
+#   ),
+#   BigStepAssign.new(
+#     :y,
+#     BigStepAdd.new(
+#       BigStepVariable.new(:x),
+#       BigStepNumber.new(3)
+#     )
+#   )
+# )
+
+# puts statement
+# puts statement.evaluate({})
+
+statement = BigStepWhile.new(
+  BigStepLessThan.new(
+    BigStepVariable.new(:x),
+    BigStepNumber.new(5)
   ),
   BigStepAssign.new(
-    :y,
-    BigStepAdd.new(
+    :x,
+    BigStepMultiply.new(
       BigStepVariable.new(:x),
       BigStepNumber.new(3)
     )
   )
 )
 
-puts statement
-puts statement.evaluate({})
+puts(statement)
+puts(
+  statement.evaluate(
+    {
+      x: BigStepNumber.new(1)
+    }
+  )
+)

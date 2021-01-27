@@ -210,6 +210,37 @@ class SimpleIf < Struct.new(:condition, :consequence, :alternative)
   end
 end
 
+class SimpleSequence < Struct.new(:first, :second)
+  def to_s
+    "#{first}; #{second}"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    case first
+    when SimpleDoNothing.new
+      [second, environment]
+    else
+      reduced_first, reduced_environment = first.reduce(environment)
+
+      [
+        SimpleSequence.new(
+          reduced_first,
+          second
+        ),
+        reduced_environment
+      ]
+    end
+  end
+end
+
 class SimpleMachine < Struct.new(:statement, :environment)
   def step
     self.statement, self.environment = statement.reduce(environment)
@@ -292,16 +323,36 @@ end
 #   }
 # ).run
 
+# SimpleMachine.new(
+#   SimpleIf.new(
+#     SimpleVariable.new(:x),
+#     SimpleAssign.new(
+#       :y,
+#       SimpleNumber.new(1)
+#     ),
+#     SimpleDoNothing.new
+#   ),
+#   {
+#     x: SimpleBoolean.new(false)
+#   }
+# ).run
+
 SimpleMachine.new(
-  SimpleIf.new(
-    SimpleVariable.new(:x),
+  SimpleSequence.new(
+    SimpleAssign.new(
+      :x,
+      SimpleAdd.new(
+        SimpleNumber.new(1),
+        SimpleNumber.new(1)
+      )
+    ),
     SimpleAssign.new(
       :y,
-      SimpleNumber.new(1)
-    ),
-    SimpleDoNothing.new
+      SimpleAdd.new(
+        SimpleVariable.new(:x),
+        SimpleNumber.new(3)
+      )
+    )
   ),
-  {
-    x: SimpleBoolean.new(false)
-  }
+  {}
 ).run

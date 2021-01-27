@@ -91,28 +91,125 @@ class BigStepLessThan < Struct.new(:left, :right)
   end
 end
 
-puts BigStepNumber
-  .new(23)
-  .evaluate({})
+class BigStepAssign < Struct.new(:name, :expression)
+  def to_s
+    "#{name} = #{expression}"
+  end
 
-puts BigStepVariable
-  .new(:x)
-  .evaluate(
-    {
-      x: BigStepNumber.new(23)
-    }
-  )
+  def inspect
+    "«#{self}»"
+  end
 
-puts BigStepLessThan
-  .new(
+  def evaluate(environment)
+    environment.merge(
+      {
+        name => expression.evaluate(environment)
+      }
+    )
+  end
+end
+
+class BigStepDoNothing
+  def to_s
+    'do-nothing'
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def ==(other_statement)
+    other_statement.instance_of?(SimpleDoNothing)
+  end
+
+  def evaluate(environment)
+    environment
+  end
+end
+
+class BigStepIf < Struct.new(:condition, :consequence, :alternative)
+  def to_s
+    "if (#{condition}) { #{consequence} } else { #{alternative} }"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def evaluate(environment)
+    case condition.evaluate(environment)
+    when BigStepBoolean.new(true)
+      consequence.evaluate(environment)
+    when BigStepBoolean.new(false)
+      alternative.evaluate(environment)
+    end
+  end
+end
+
+class BigStepSequence < Struct.new(:first, :second)
+  def to_s
+    "#{first}; #{second}"
+  end
+
+  def inspect
+    "«#{self}»"
+  end
+
+  def evaluate(environment)
+    second.evaluate(
+      first.evaluate(environment)
+    )
+  end
+end
+
+
+# Expressions
+
+# puts BigStepNumber
+#   .new(23)
+#   .evaluate({})
+
+# puts BigStepVariable
+#   .new(:x)
+#   .evaluate(
+#     {
+#       x: BigStepNumber.new(23)
+#     }
+#   )
+
+# puts BigStepLessThan
+#   .new(
+#     BigStepAdd.new(
+#       BigStepVariable.new(:x),
+#       BigStepNumber.new(2)
+#     ),
+#     BigStepVariable.new(:y)
+#   ).evaluate(
+#     {
+#       x: BigStepNumber.new(2),
+#       y: BigStepNumber.new(5)
+#     }
+#   )
+
+
+# Statements
+
+statement = BigStepSequence.new(
+  BigStepAssign.new(
+    :x,
+    BigStepAdd.new(
+      BigStepNumber.new(1),
+      BigStepNumber.new(1)
+    )
+  ),
+  BigStepAssign.new(
+    :y,
     BigStepAdd.new(
       BigStepVariable.new(:x),
-      BigStepNumber.new(2)
-    ),
-    BigStepVariable.new(:y)
-  ).evaluate(
-    {
-      x: BigStepNumber.new(2),
-      y: BigStepNumber.new(5)
-    }
+      BigStepNumber.new(3)
+    )
   )
+)
+
+puts statement
+puts statement.evaluate({})
